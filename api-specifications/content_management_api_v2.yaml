@@ -1,0 +1,82 @@
+openapi: 3.0.2
+info:
+    title: 'Content Management API'
+    description: "<p>// Callout</p>\n<p>// Callout</p>\n<p>The Content Management API (CM API) is a secure REST API that provides read/write access to your Kentico Cloud projects.</p>\n<p>Use the API to migrate your existing content into your Kentico Cloud project, or update content in unpublished content items. Note that the API cannot be used on published content items unless you create new versions of the items first.</p>\n<p>In the future, we plan to support working with workflows, publishing and unpublishing content using the Content Management API. See our <a href=\"https://kenticocloud.com/roadmap\">Roadmap</a> to find more details or to give us feedback on planned features.</p>\n<p>When retrieving and updating content via the CM API, you always work with the latest versions of content – the same as you would see in the Kentico Cloud user interface.</p>\n<p>Learn how to import content via the API by taking the tutorial on <em>Importing to Kentico Cloud</em>.</p>\n<p>The base URL for all requests is `https://manage.kenticocloud.com/v2/projects/&lt;YOUR_PROJECT_ID&gt;`.</p>\n<p>All requests to the API must be made securely with HTTPS with <a href=\"https://forums.kenticocloud.com/discussion/46/security-update-tls-v1-1-deprecation\">TLS 1.2</a> and <a href=\"https://developer.kenticocloud.com/reference#authentication\">authenticated</a> with a valid API key. Requests to the API are <a href=\"https://developer.kenticocloud.com/reference#content-management-api-rate-limits\">rate limited</a> and uncached.</p>\n<p>// Code block example</p>\n<p><strong>Note</strong>: The CM API does not provide any content filtering options and is not optimized for content delivery. If you need to deliver larger amounts of content, filter it, and leverage content caching, we recommend using the <a href=\"https://developer.kenticocloud.com/reference#delivery-api\">Delivery API</a> instead.</p>"
+    version: '2'
+    termsOfService: 'https://kenticocloud.com/terms-of-service'
+    contact:
+        name: 'Kentico Cloud'
+        url: 'https://kenticocloud.com/contact'
+        email: cloud@kentico.com
+    license:
+        name: 'Some Open Source License'
+        url: 'https://example.com/license'
+servers:
+    -
+        url: 'https://manage.kenticocloud.com/v2/projects'
+        description: production
+security:
+    -
+        Bearer_authentication: []
+components:
+    securitySchemes:
+        Bearer_authentication:
+            type: http
+            description: '<p>API key to authorize requests to the API. If you don''t have an API key for this API yet, get yours in <a href="https://app.kenticocloud.com/" data-new-window="true" target="_blank" rel="noopener noreferrer">Kentico Cloud</a> &gt; Project settings &gt; API keys.</p>'
+            scheme: bearer
+            name: Authorization
+            bearerFormat: 'Bearer <YOUR_API_KEY>'
+            in: query
+    parameters:
+        project_id:
+            description: '<p>The ID of your project. Example: `975bf280-fd91-488c-994c-2f04416e5ee3`.</p>'
+            required: true
+            schema: {format: uuid}
+            name: project_id
+            in: path
+        file_name:
+            description: '<p>The name of the uploaded binary file. The `file_name` parameter specified in the URL will be used for the asset name when <a data-item-id="2b84d986-75a1-4a6d-ada0-ab0d2d69b890" href="">creating an asset</a>.</p>'
+            required: true
+            schema: {format: ""}
+            name: file_name
+            in: path
+        Content-type:
+            description: '<p>Specifies the media type of the binary data.</p>'
+            required: true
+            schema: {format: ""}
+            name: Content-type
+            in: header
+        Content-length:
+            description: '<p>Specifies the size of the binary file in bytes.</p>'
+            required: true
+            schema: {format: int32}
+            name: Content-length
+            in: header
+tags:
+    -
+        name: content-items
+        x-displayName: 'Content items'
+        description: "<p>The content item object contains metadata about your content, such as the name of the content item and the sitemap locations it is placed in. The content item object does not store the content itself. The content for each language variant of a content item is saved in <a href=\"https://developer.kenticocloud.com/reference#content-management-api-v2-language-variant-object\">language variants</a>, with each content item having as many variants as there are active languages in your project.</p>\n<p>To manage content items via the Content Management API, you need to send requests to URIs based on the following patterns:</p>\n<ul>\n  <li>Using internal IDs: `&lt;base_URL&gt;/items/&lt;content_item_id&gt;`</li>\n  <li>Using codenames: `&lt;base_URL&gt;/items/codename/&lt;content_item_codename&gt;`</li>\n  <li>Using external IDs: `&lt;base_URL&gt;/items/external-id/&lt;content_item_external_identifier&gt;`</li>\n</ul>\n<p>To retrieve <a href=\"https://developer.kenticocloud.com/reference#content-management-api-v2-list-variants\">retrieve language variants</a> of a specific content item, you can list the variants by specifying the internal ID, codename, or external ID of the content item.</p>"
+    -
+        name: assets
+        x-displayName: Assets
+        description: "<p>Assets in Kentico Cloud consist of a reference to a binary file and metadata describing the file. Each binary file can be referenced only by a single asset. Once an asset is created, the file it references cannot be changed, you can only modify the asset's descriptions and title. Note that binary files that are not used by any assets will not be visible in the Kentico Cloud UI.</p>\n<p>// Callout</p>"
+paths:
+    '/{project_id}/items':
+        post:
+            tags: [content-items]
+            summary: 'Add a content item'
+            description: "<p>Create a new content item based on a specific content type. Content items do NOT contain any content themselves but serve as wrappers for individual language variants.</p>\n<p>To import content to a specific&nbsp;language variant&nbsp;of a content item, you can&nbsp;upsert a language variant.</p>\n<p>If you are importing content from a different system and want to use the same identifiers for your content as in the previous system, use the&nbsp;external_id&nbsp;attribute to set a custom identifier for the new content item.</p>"
+            operationId: add-a-content-item
+            responses: {'201': {description: '<p>The created content item object</p>', headers: {}, content: {application/json: {example: "id: f4b3fc05-e988-4dae-9ac1-a94aba566474\nname: On Roasts\ncodename: on_roasts\ntype:\n  id: b7aa4a53-d9b1-48cf-b7a6-ed0b182c4b89\nsitemap_locations:\n- id: 45a123f3-1c55-c697-7dae-78369c8f1e2c\nexternal_id: '59713'\nlast_modified: '2017-04-04T13:45:30.7692802Z'"}}}, '400': {description: "<p>A bad request. Can occur due to the following:</p>\n<ul>\n  <li>The&nbsp;name&nbsp;property is missing, empty, or longer than 50 characters.</li>\n  <li>The&nbsp;type&nbsp;property is missing or referencing a non-existent content type.</li>\n  <li>The&nbsp;sitemap_locations&nbsp;property&nbsp;contains duplicate&nbsp;references&nbsp;or a reference to a non-existent sitemap location.</li>\n  <li>The&nbsp;external_id&nbsp;property&nbsp;contains the same value as an already existing content item within the specified project.</li>\n  <li>The request is malformed.</li>\n</ul>", headers: {}, content: {application/json: {example: "request_id: e6368434-e500-48b4-9ffe-3cd3c0f53ac9\nerror_code: 0\nmessage: Provide ID of content item's content type."}}}, '429': {description: '<p>The API rate limit has been exceeded.</p>', headers: {Retry-after: {description: '<p>Indicates how long (in seconds) the client should wait before making a new request.</p>', required: true, schema: {format: int32}}}, content: {application/json: {example: "request_id: 80000004-0002-fd00-b63f-84710c7967bb\nerror_code: 10000\nmessage: API rate limit exceeded. Please retry your request later."}}}}
+            requestBody: {content: {application/json: {}}, description: '<p>The content item to be added</p>', required: true}
+            parameters: [{$ref: '#/components/parameters/project_id'}]
+    '/{project_id}/files/{file_name}':
+        post:
+            tags: [assets]
+            summary: 'Upload a binary file'
+            description: "<p>Add a new file. The uploaded file will not be visible in the Kentico Cloud UI unless there is an asset using it, see how to <a href=\"https://gist.githubusercontent.com/jancerman/248759d3ae8b088dee38c983adca949f/raw/d81b294fe544683cd84466a6f3913b940db07ce2/OHP%2520OAS%2520Proto.yaml\">Add an asset</a>.</p>\n<p><strong>Note</strong>: Maximum size limit for binary files is 100 MB.</p>"
+            operationId: upload-a-binary-file
+            responses: {'200': {description: '<p>A file reference to the uploaded binary file.</p>', headers: {}, content: {application/json: {example: "id: 806ec84e-7c71-4856-9519-ee3dd3558583\ntype: internal"}}}, '400': {description: "<p>A bad request. Can occur due to the following:</p>\n<ul>\n  <li>The provided binary file is too large. The maximum size limit is 100 MB.</li>\n  <li>The Content-type header is missing.</li>\n  <li>The Content-length header is missing.</li>\n  <li>The request is malformed.</li>\n</ul>", headers: {}, content: {application/json: {example: "request_id: 00000000-0000-0000-c403-0080000000c2\nerror_code: 205\nmessage: The request does not contain required header Content-Type."}}}, '429': {description: '<p>The API rate limit has been exceeded.</p>', headers: {Retry-after: {description: '<p>Indicates how long (in seconds) the client should wait before making a new request.</p>', required: true, schema: {format: int32}}}, content: {application/json: {example: "request_id: 80000004-0002-fd00-b63f-84710c7967bb\nerror_code: 10000\nmessage: API rate limit exceeded. Please retry your request later."}}}}
+            requestBody: {content: {application/octet-stream: {}}, description: '<p>The binary data of the file.</p>', required: true}
+            parameters: [{$ref: '#/components/parameters/project_id'}, {$ref: '#/components/parameters/file_name'}, {$ref: '#/components/parameters/Content-type'}, {$ref: '#/components/parameters/Content-length'}]
